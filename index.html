@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Visor de Páginas sin Node.js (Usando Thing Proxy)</title>
+  <title>Verificador de Páginas - Contenido Organizado</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -12,17 +12,21 @@
       margin-top: 20px;
       border: 1px solid #ccc;
       padding: 10px;
-      overflow: auto;
+      overflow-y: auto;
       max-height: 80vh;
+    }
+    /* Separa visualmente cada bloque extraído */
+    .content-block {
+      margin-bottom: 1em;
     }
   </style>
 </head>
 <body>
-  <h1>Visor de Páginas sin Node.js</h1>
+  <h1>Verificador de Páginas</h1>
   <form id="fetchForm">
     <label for="urlInput">Ingresa la URL de la página:</label>
     <input type="text" id="urlInput" name="url" placeholder="https://ejemplo.com" required>
-    <button type="submit">Ver Página</button>
+    <button type="submit">Verificar Página</button>
   </form>
   <div id="output"></div>
 
@@ -32,35 +36,35 @@
       const url = document.getElementById('urlInput').value;
       if (!url) return;
 
-      // Utilizamos Thing Proxy para evitar problemas de CORS.
+      // Utilizamos Thing Proxy para evitar restricciones CORS
       const proxyUrl = 'https://thingproxy.freeboard.io/fetch/' + encodeURIComponent(url);
+      
       fetch(proxyUrl)
         .then(response => {
           if (response.ok) return response.text();
           throw new Error('Error en la respuesta de red.');
         })
         .then(data => {
-          // Procesar el HTML obtenido
+          // Parseamos el HTML obtenido
           const parser = new DOMParser();
           const doc = parser.parseFromString(data, 'text/html');
 
-          // Eliminar elementos no deseados: anuncios, pop-ups y scripts
-          const removeSelectors = [
-            '[id*="ad"]',
-            '[class*="ad"]',
-            '[id*="popup"]',
-            '[class*="popup"]',
-            '[id*="modal"]',
-            '[class*="modal"]',
-            'script'
-          ];
-          removeSelectors.forEach(selector => {
-            const elements = doc.querySelectorAll(selector);
-            elements.forEach(el => el.remove());
-          });
+          // Seleccionamos solo los elementos con formato de texto:
+          // H1 a H6, párrafos, elementos de lista, blockquotes y preformateados.
+          const allowedSelector = 'h1, h2, h3, h4, h5, h6, p, li, blockquote, pre';
+          const elements = doc.body.querySelectorAll(allowedSelector);
+          
+          // Limpiar el contenedor de salida
+          const output = document.getElementById('output');
+          output.innerHTML = '';
 
-          // Mostrar el HTML filtrado en la página
-          document.getElementById('output').innerHTML = doc.documentElement.innerHTML;
+          // Agregar cada elemento extraído al contenedor, preservando el formato original.
+          elements.forEach(el => {
+            const container = document.createElement('div');
+            container.className = 'content-block';
+            container.appendChild(el.cloneNode(true));
+            output.appendChild(container);
+          });
         })
         .catch(error => {
           console.error('Error al obtener la página:', error);
