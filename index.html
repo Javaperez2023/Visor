@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Visor de Páginas sin Node.js</title>
+  <title>Visor de Páginas sin Node.js (Usando Thing Proxy)</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -12,6 +12,8 @@
       margin-top: 20px;
       border: 1px solid #ccc;
       padding: 10px;
+      overflow: auto;
+      max-height: 80vh;
     }
   </style>
 </head>
@@ -30,17 +32,17 @@
       const url = document.getElementById('urlInput').value;
       if (!url) return;
 
-      // Usamos AllOrigins como proxy para evitar problemas de CORS.
-      const proxyUrl = 'https://api.allorigins.hexocode.repl.co/get?disableCache=true&url=' + encodeURIComponent(url);
+      // Utilizamos Thing Proxy para evitar problemas de CORS.
+      const proxyUrl = 'https://thingproxy.freeboard.io/fetch/' + encodeURIComponent(url);
       fetch(proxyUrl)
         .then(response => {
-          if (response.ok) return response.json();
+          if (response.ok) return response.text();
           throw new Error('Error en la respuesta de red.');
         })
         .then(data => {
           // Procesar el HTML obtenido
           const parser = new DOMParser();
-          const doc = parser.parseFromString(data.contents, 'text/html');
+          const doc = parser.parseFromString(data, 'text/html');
 
           // Eliminar elementos no deseados: anuncios, pop-ups y scripts
           const removeSelectors = [
@@ -62,7 +64,7 @@
         })
         .catch(error => {
           console.error('Error al obtener la página:', error);
-          document.getElementById('output').textContent = 'Error al obtener la página.';
+          document.getElementById('output').textContent = 'Error al obtener la página: ' + error;
         });
     });
   </script>
