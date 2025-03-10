@@ -35,12 +35,9 @@
       const url = document.getElementById('urlInput').value;
       if (!url) return;
 
-      // Prueba cambiando de proxy:
-      // Opción 1: Thing Proxy
-      // const proxyUrl = 'https://thingproxy.freeboard.io/fetch/' + encodeURIComponent(url);
-      
-      // Opción 2: AllOrigins
-      const proxyUrl = 'https://api.allorigins.hexocode.repl.co/get?disableCache=true&url=' + encodeURIComponent(url);
+      // Utilizamos CORS Anywhere. 
+      // IMPORTANTE: Debes habilitar el acceso temporalmente en https://cors-anywhere.herokuapp.com/corsdemo
+      const proxyUrl = 'https://cors-anywhere.herokuapp.com/' + url;
 
       fetch(proxyUrl)
         .then(response => {
@@ -52,15 +49,13 @@
           const parser = new DOMParser();
           const doc = parser.parseFromString(data, 'text/html');
 
-          // Seleccionamos solo los elementos con formato de texto:
+          // Seleccionamos solo los elementos con formato de texto (H1 a H6, párrafos, listas, etc.)
           const allowedSelector = 'h1, h2, h3, h4, h5, h6, p, li, blockquote, pre';
           const elements = doc.body.querySelectorAll(allowedSelector);
-          
-          // Limpiar el contenedor de salida
+
           const output = document.getElementById('output');
           output.innerHTML = '';
 
-          // Agregar cada elemento extraído al contenedor
           elements.forEach(el => {
             const container = document.createElement('div');
             container.className = 'content-block';
