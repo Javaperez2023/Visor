@@ -15,7 +15,6 @@
       overflow-y: auto;
       max-height: 80vh;
     }
-    /* Separa visualmente cada bloque extraído */
     .content-block {
       margin-bottom: 1em;
     }
@@ -36,9 +35,13 @@
       const url = document.getElementById('urlInput').value;
       if (!url) return;
 
-      // Utilizamos Thing Proxy para evitar restricciones CORS
-      const proxyUrl = 'https://thingproxy.freeboard.io/fetch/' + encodeURIComponent(url);
+      // Prueba cambiando de proxy:
+      // Opción 1: Thing Proxy
+      // const proxyUrl = 'https://thingproxy.freeboard.io/fetch/' + encodeURIComponent(url);
       
+      // Opción 2: AllOrigins
+      const proxyUrl = 'https://api.allorigins.hexocode.repl.co/get?disableCache=true&url=' + encodeURIComponent(url);
+
       fetch(proxyUrl)
         .then(response => {
           if (response.ok) return response.text();
@@ -50,7 +53,6 @@
           const doc = parser.parseFromString(data, 'text/html');
 
           // Seleccionamos solo los elementos con formato de texto:
-          // H1 a H6, párrafos, elementos de lista, blockquotes y preformateados.
           const allowedSelector = 'h1, h2, h3, h4, h5, h6, p, li, blockquote, pre';
           const elements = doc.body.querySelectorAll(allowedSelector);
           
@@ -58,7 +60,7 @@
           const output = document.getElementById('output');
           output.innerHTML = '';
 
-          // Agregar cada elemento extraído al contenedor, preservando el formato original.
+          // Agregar cada elemento extraído al contenedor
           elements.forEach(el => {
             const container = document.createElement('div');
             container.className = 'content-block';
