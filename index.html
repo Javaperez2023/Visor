@@ -35,15 +35,11 @@
       const url = document.getElementById('urlInput').value;
       if (!url) return;
 
-      // Utilizamos CORS Anywhere. IMPORTANTE: habilita el acceso temporalmente en:
-      // https://cors-anywhere.herokuapp.com/corsdemo
-      const proxyUrl = 'https://cors-anywhere.herokuapp.com/' + url;
+      // Utilizamos tu propio proxy en Cloudflare Workers
+      const proxyUrl = 'https://javascript.javaperez2020.workers.dev/?url=' + encodeURIComponent(url);
 
       fetch(proxyUrl)
         .then(response => {
-          if (response.status === 403) {
-            throw new Error("403 Forbidden: Acceso denegado por el proxy. Revisa las restricciones del servicio, habilita el acceso temporalmente o implementa tu propio proxy.");
-          }
           if (!response.ok) {
             throw new Error('Error en la respuesta de red: ' + response.statusText);
           }
@@ -53,16 +49,14 @@
           // Parseamos el HTML obtenido
           const parser = new DOMParser();
           const doc = parser.parseFromString(data, 'text/html');
-
-          // Seleccionamos solo elementos de texto con formato (H1-H6, párrafos, listas, etc.)
+          
+          // Seleccionamos solo elementos de texto con formato: H1-H6, párrafos, listas, blockquotes y pre
           const allowedSelector = 'h1, h2, h3, h4, h5, h6, p, li, blockquote, pre';
           const elements = doc.body.querySelectorAll(allowedSelector);
-
-          // Limpiar el contenedor de salida
+          
           const output = document.getElementById('output');
           output.innerHTML = '';
 
-          // Agregar cada elemento extraído al contenedor
           elements.forEach(el => {
             const container = document.createElement('div');
             container.className = 'content-block';
